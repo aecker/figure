@@ -176,19 +176,24 @@ classdef Figure < handle
             %   length.
             
             for hdl = self.subplots()
+                set(hdl, 'TickDir', 'out');
                 pos = get(hdl, 'Position');
                 
                 sz = pos(3 : 4) .* self.size;
                 if strcmp(get(hdl, 'DataAspectRatioMode'), 'manual')
                     ar = get(hdl, 'DataAspectRatio');
-                    ar = [diff(xlim) diff(ylim)] ./ ar(1 : 2);
-                    index = (sz(1) / sz(2) > ar(1) / ar(2)) + 1;
+                    ar = [diff(get(hdl, 'xlim')) diff(get(hdl, 'ylim'))] ./ ar(1 : 2);
                 elseif strcmp(get(hdl, 'PlotBoxAspectRatioMode'), 'manual')
                     ar = get(hdl, 'PlotBoxAspectRatio');
-                    index = (sz(1) / sz(2) > ar(1) / ar(2)) + 1;
                 else
-                    [~, index] = max(sz);
+                    ar = sz;
                 end
+                if ar(1) / ar(2) > sz(1) / sz(2)
+                    sz(2) = sz(1) * ar(2) / ar(1);
+                else
+                    sz(1) = sz(2) * ar(1) / ar(2);
+                end
+                [~, index] = max(sz);
                 ticklen = self.tickLength / sz(index) * self.mmPerPt;
                 set(hdl, 'TickLength', ticklen * [1 1]);
             end
