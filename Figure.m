@@ -25,6 +25,7 @@ classdef Figure < handle
         mmPerInch = 25.4
         mmPerPt = 25.4 / 72
         pxPerInch = get(0, 'ScreenPixelsPerInch')
+        isHg2 = datenum(version('-date')) > 735856;
     end
     
     
@@ -63,6 +64,19 @@ classdef Figure < handle
                 'DeleteFcn', @(varargin) self.deleteFcn(), ...
                 'UserData', self, ...
                 varargin{first + 1 : end});
+            
+            % for HG2 set default font size multipliers to 1
+            if self.isHg2
+                builtin('set', self.handle, ...
+                    'DefaultAxesTitleFontSizeMultiplier', 1, ...
+                    'DefaultAxesTitleFontWeight', 'normal', ...
+                    'DefaultAxesLabelFontSizeMultiplier', 1, ...
+                    'DefaultAxesXColor', 'k', ...
+                    'DefaultAxesYColor', 'k', ...
+                    'DefaultAxesZColor', 'k', ...
+                    'DefaultAxesGridColor', 'k', ...
+                    'DefaultAxesMinorGridColor', 'k');
+            end
         end
         
         
@@ -145,6 +159,13 @@ classdef Figure < handle
                     s.Renderer = 'painters';
                     s.Resolution = 'auto';
                     s.FixedFontSize = self.fontSizePrint;
+                    if self.isHg2
+                        % Workaround for Matlab R2014b and following:
+                        % From R2014b on Matlab cannot save line widths
+                        % <1pt in eps files. Therefore, we scale everything
+                        % up up a factor of 2 in order to compensate
+                        s.FixedFontSize = s.FixedFontSize * 2;
+                    end
                 case {'png', 'jpg', 'tif'}
                     s.Renderer = 'zbuffer';
                     s.Resolution = '72';
@@ -207,6 +228,13 @@ classdef Figure < handle
             
             self.setsub('Box', 'off');
             self.fixticks();
+            
+            if self.isHg2
+                % ensure legends and colorbars have same font size in Matlab > R2014b
+                hdl = [findobj(self.handle, 'Type', 'Legend'); ...
+                       findobj(self.handle, 'Type', 'Colorbar')];
+                set(hdl, 'FontSize', self.fontSizeScreen);
+            end
         end
         
     end
