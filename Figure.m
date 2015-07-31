@@ -178,7 +178,9 @@ classdef Figure < handle
             s.Height = self.size(2) / 10 * scale;
             
             % save figure
+            self.fixFontSize(s.FixedFontSize);
             hgexport(self.handle, file, s);
+            self.fixFontSize(self.fontSizeScreen);
         end
         
         
@@ -228,12 +230,19 @@ classdef Figure < handle
             
             self.setsub('Box', 'off');
             self.fixticks();
+            self.fixFontSize(self.fontSizeScreen);
+        end
+        
+    
+        function fixFontSize(self, sz)
+            % Set font sizes of legends and colorbars in R2014b
+            %   fig.fixFontSize(sz) sets the font size of legends and
+            %   colorbars to sz. Applies only to >R2014b (HG2).
             
             if self.isHg2
-                % ensure legends and colorbars have same font size in Matlab > R2014b
                 hdl = [findobj(self.handle, 'Type', 'Legend'); ...
                        findobj(self.handle, 'Type', 'Colorbar')];
-                set(hdl, 'FontSize', self.fontSizeScreen);
+                set(hdl, 'FontSize', sz);
             end
         end
         
