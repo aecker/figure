@@ -177,6 +177,14 @@ classdef Figure < handle
             s.Width = self.size(1) / 10 * scale;
             s.Height = self.size(2) / 10 * scale;
             
+            if self.isHg2
+                pos = get(self.handle, 'Position');
+                scr = get(0, 'ScreenSize');
+                if any(pos(3 : 4) * s.FixedFontSize / self.fontSizeScreen > scr(3 : 4))
+                    warning('Figure too large. Font sizes will be incorrect due to Matlab bug. Split the figure.')
+                end
+            end
+            
             % save figure
             self.fixFontSize(s.FixedFontSize);
             hgexport(self.handle, file, s);
